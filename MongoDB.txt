@@ -1,0 +1,267 @@
+mongod.exe --dbpath "G:\JAVA\mongodb\data" 
+mongo.exe
+
+
+Consider the following collection, Employee.
+{_id: 10001, name:"Subhashini",unit:"Hadoop"}
+{_id: 10002, name:"Shobana", unit:"Spark"}
+To display employee details, the MongoDB query would be
+db.Employee.find();
+We discuss MongoDB query
+
+
+
+Use the following syntax to create a database in MongoDB.
+use <database name>
+use mydb
+
+To confirm the existence of the database, type the following command
+in the mongo shell.
+> db
+mydb
+
+
+
+Use the following syntax to drop a database in MongoDB.
+db.dropDatabase()
+
+
+Use the following syntax to display a list of databases.
+show dbs
+show databases
+
+
+Use the following syntax to display the version of MongoDB.
+db.version()
+
+
+Collections
+MongoDB collections are similar to tables in RDBMS. In MongoDB, collections are created automatically when we refer to them in a command. For an example, consider the following command.
+db.person.insert({_id:100001,name:"Taanushree A S",age:10}) 
+This command creates a collection named person if it is not present. If it is present, it simply inserts a document into the person collection.
+
+Use the following syntax to create a collection.
+db.createCollection (<name>)
+
+
+To create a collection by the name person use the following command.
+db.createCollection("person")
+
+
+
+Capped collections are fixed-size collection for which we can specify the maximum size of the collection in bytes and the number of documents allowed. Capped collections work similar to a circular buffer:
+Once it fills its allocated space, it makes room for new documents by overwriting the oldest documents in the collection.
+There are some limitations of capped collections:
+• You can’t shard capped collections.
+• You can’t use the aggregation pipeline operator $out to write results to a capped collection.
+• You can’t delete documents from a capped collection.
+• Creating an index allows you to perform efficient update operations.
+
+Use the following syntax to create a collection.
+db.createCollection (<name>,{capped:<boolean>,size:<number>,max :<number>})
+
+To check if a collection is capped, type the following command in the mongo shell.
+> db.student.isCapped()
+true
+
+
+Use the following syntax to insert documents.
+db.collection.insertOne()
+db.collection.insertMany()
+
+> db.person.insertOne({_id:1001,name:"Taanushree AS",age:10})
+{ "acknowledged" : true, "insertedId" : 1001 }
+db.person.insertMany([{_id:1003,name:"Anba V M",age:16},{_id:10
+04,name:"shobana",age:44}])
+
+Use the following syntax to retrieve documents from a collection.
+db.collection.find()
+
+Step 1: Select All Documents in a collection , use the following command.
+db.person.find({})
+
+Step 2: Specify Equality Conditions
+db.person.find({name:"shobana"})
+Step 3: Specify Conditions Using Query Operator: To select all documents from the collection person where age is greater
+than 10, here is the command:
+db.person.find({age:{$gt:10}})
+
+Step 4: Specify AND Conditions
+In a compound query, you can specify conditions for more than one field. To select all documents in the person collection where the name equals "shobana" and the age is greater than 10, here is the command:
+db.person.find({ name:"shobana",age:{$gt:10}})
+
+Step 5: Specify OR Conditions
+You can use $or in a compound query to join each clause with a logical or
+conjunction.
+The operator $or selects the documents from the collection that match
+at least one of the selected conditions.
+To select all documents in the person collection where the name
+equals "shobana" or age equals 20, here is the command:
+db.person.find( { $or: [ { name: "shobana" }, { age: { $eq: 20} } ] } )
+
+Update commands
+
+db.collection.updateOne To modify a single document
+db.collection.updateMany To modify multiple documents
+db.collection.replaceOne To replace the first matching document in the
+collection that matches the filter
+
+
+db.student.updateOne({name: "Joshi"},{$set:{"marks.english": 20}})
+
+db.student.updateMany( { "result":"fail" }, { $set: { "marks.
+english": 20, marks.maths: 20 } })
+
+db.student.replaceOne( { name: "John" }, {_id:1001,name:"John",
+marks:{english:36,maths:39},result:"pass"})
+
+Delete Operation
+db.collection.deleteOne To delete a single document
+db.collection.deleteMany To delete multiple documents
+
+
+db.student.deleteOne({name: "John"})
+
+db.student.deleteMany({name: "Jack"})
+
+Step 3: Delete All Documents from a Collection
+db.student.deleteMany({})
+Import
+Execute the following command to import data from the student.csv
+file to the students collection.
+mongoimport --db student --collection students --type csv
+--headerline --file c:\Sample\student.csv
+
+Export
+mongoexport --db student --collection students --out C:\Sample\student.json
+
+
+Embedded Documents in MongoDB
+Using embedded documents allows us to embed a document within another document. Consider this example.
+{_id:1001,name:"John",marks:{english:35,maths:38},result:"pass"}
+Here, the marks field contains an embedded document.
+Execute the following code to create an employee database and employee collection.
+use employee
+db.employee.insertMany([{_id:1001,name:"John",address:{previous:"123,1st Main",current:"234,2nd Main"},unit:"Hadoop"},
+{_id:1002,name:"Jack", address:{previous:"CresentStreet",current:"234,Bald Hill Street"},unit:"MongoDB"},
+{_id:1003,name:"James", address:{previous:"Cresent Street",current:"234,Hill Street"},unit:"Spark"}])
+
+Step 1: Match an Embedded or Nested Document
+To perform an equality match on the embedded document, you need to specify the exact match document in the <value> document, including the
+field order.
+To select all documents where the address field equals the document
+{previous:"Cresent Street",current:"234,Bald Hill Street"}: 
+db.employee.find( { address: { previous:"Cresent Street",current:"234,Bald Hill Street" }} )
+
+Step 2: Query on a Nested Field
+We can use dot notation to query a field of the embedded document. To select all documents where the previous field nested in the address field equals "Cresent Street",
+db.employee.find( { "address.previous": "Cresent Street" } )
+
+
+Working with array:
+Step 1: Match an Array
+Execute the code shown here to create the employeedetails collection under the employee database.
+db.employeedetails.insertMany([{ name: "John", projects: ["MongoDB", "Hadoop","Spark"],scores:[25,28,29] }, { name: "James", projects: ["Cassandra","Spark"], scores:[26,24,23]}, { name: "Smith",
+projects: [ "Hadoop","MongoDB"], scores:[22,28,26]} ] )
+
+To select all documents where the projects value is an array with exactly two elements, "Hadoop" and "MongoDB", in the specified order, use the following commands.
+db.employeedetails.find( { projects: ["Hadoop", "MongoDB"] } )
+
+Step 2: Query an Array for an Element
+To query all documents where projects is an array that contains the string "MongoDB" as one of its elements, execute the following command.
+db.employeedetails.find( { projects: "MongoDB" } )
+
+Step 3: Specify Query Operators
+To query all documents where the scores field is an array that contains at least one element whose value is greater than 26 we can use the $gt operator.
+db.employeedetails.find( { scores:{$gt:26} } )
+
+Step 4: Query an Array with Compound Filter
+Conditions on the Array Elements A compound filter condition on the array can be specified as shown here.
+db.employeedetails.find( { scores: { $gt: 20, $lt: 24 } } )
+
+Step 5: Using the $elemMatch operator
+The $elemMatch operator allows us to specify multiple conditions on the array elements such that at least one array element should satisfy all of the specified conditions.
+db.employeedetails.find( { scores: { $elemMatch: { $gt: 23,$lt: 27 } } } )
+
+Step 6: Query an Array Element by Index Position
+Use dot notation to query an array element by its index position. Use this code to select all documents where the third element in the scores array is greater than 26.
+db.employeedetails.find( { "scores.2": { $gt: 26 } } )
+
+Step 7: Using the $size Operator
+You can use the $size operator to query an array by number of elements. To select all documents where the projects array has two elements, use this code.
+db.employeedetails.find( { "projects": { $size: 2 } } )
+
+Step 8: Using the $push Operator
+You can use the $push operator to add a value to an array. To add work location details, use this code.
+db.employeedetails.update({name:"James"},{$push:{Location: "US"}})
+
+
+Step 9: Using the $addToSet Operator
+You can use the $addToSet operator to add a value to an array. $addToSet adds a value to an array only if a value is not present. If a value is present, it does not do anything.
+To add hobbies to the employeedetails collection, use this code.
+db.employeedetails.update( {name: "James"}, { $addToSet: {hobbies: [ "drawing", "dancing"]} })
+
+Step 10: Using the $pop Operator
+You can use the $pop operator to remove the first or last element of an array. To remove the first element in the scores array, use this code.
+db.employeedetails.update( {name: "James"},{ $pop: {scores:-1}})
+
+
+use DATABASE_NAME
+use mydb
+
+# check currently selected db
+db
+#display db list
+show dbs
+
+
+Basic syntax of createCollection() command is as follows −
+
+db.createCollection(name, options)
+
+>use test
+switched to db test
+>db.createCollection("mycollection")
+{ "ok" : 1 }
+>
+
+ou can check the created collection by using the command show collections.
+
+>show collections
+mycollection
+system.indexes
+
+
+In MongoDB, you don't need to create collection. MongoDB creates collection automatically, when you insert some document.
+
+>db.tutorialspoint.insert({"name" : "tutorialspoint"}),
+WriteResult({ "nInserted" : 1 })
+>show collections
+mycol
+mycollection
+system.indexes
+tutorialspoint
+>
+
+
+Basic syntax of drop() command is as follows −
+
+db.COLLECTION_NAME.drop()
+db.mycollection.drop()
+
+
+The basic syntax of insert() command is as follows −
+
+>db.COLLECTION_NAME.insert(document)
+
+db.users.insert({
+... _id : ObjectId("507f191e810c19729de860ea"),
+... title: "MongoDB Overview",
+... description: "MongoDB is no sql database",
+... by: "tutorials point",
+... url: "http://www.tutorialspoint.com",
+... tags: ['mongodb', 'database', 'NoSQL'],
+... likes: 100
+... })
+WriteResult({ "nInserted" : 1 })
+>
